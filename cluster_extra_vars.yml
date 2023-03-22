@@ -1,0 +1,33 @@
+---
+
+# Extra vars needed to build cluster
+cluster_terraform_template_dir: "{{ playbook_dir }}/cluster_terraform_template"
+
+# Cluster instance vars
+cluster_name: "slurm"
+cluster_id: "{{ cluster_name }}"
+openhpc_slurm_partitions:
+  - name: "m"
+    count: 1
+    flavor_name: "g.4.standard"
+    default: "YES"
+  - name: "s"
+    count: 2
+    flavor_name: "g.2.standard"
+    default: "NO"
+cluster_run_validation: true
+cluster_user_ssh_public_key: ""
+home_volume_size: 50
+
+# Cloud vars
+cluster_image: 94b50280-7c4a-4f36-ba2b-1f95c56bdde1
+cluster_external_network: "Internet"
+cluster_cidr: "192.168.99.0/24" # Can have many project networks with the same CIDR
+cluster_nameservers:
+  - 1.1.1.1
+  - 8.8.8.8
+login_flavor_name: "g.4.standard"
+control_flavor_name: "g.4.standard"
+metrics_db_maximum_size: 5
+block_device_prefix: "sd"
+

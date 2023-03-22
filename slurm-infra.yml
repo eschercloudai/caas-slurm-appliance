@@ -114,7 +114,7 @@
         zenith_proxy_mitm_enabled: yes
         zenith_proxy_mitm_auth_inject: basic
         zenith_proxy_mitm_auth_basic_username: azimuth
-        zenith_proxy_mitm_auth_basic_password: "{{ vault_azimuth_user_password }}"
+        zenith_proxy_mitm_auth_basic_password: "{{ vault_hpc_user_password }}"
       when: zenith_subdomain_ood is defined
 
 - import_playbook: vendor/stackhpc/ansible-slurm-appliance/ansible/adhoc/hpctests.yml
@@ -123,6 +123,8 @@
 - hosts: localhost
   tasks:
     - debug: var=outputs
+      when:
+        - cluster_state is not defined or cluster_state == 'present'
       vars:
         # Ansible has a fit when there are two 'hostvars' evaluations in a resolution chain,
         # so we have to repeat logic here unfortunately
@@ -132,7 +134,7 @@
               combine(
                 {
                   "openondemand_url": "https://" ~ (hostvars[groups['openstack'][0]].cluster_floating_ip_address | replace('.', '-')) ~ ".sslip.io",
-                  "azimuth_user_password": hostvars[groups['control'][0]].ansible_local.openhpc_secrets.vault_azimuth_user_password
+                  "hpc_user_password": hostvars[groups['control'][0]].ansible_local.openhpc_secrets.vault_hpc_user_password
                 }
                 if zenith_fqdn_ood is not defined
                 else {}

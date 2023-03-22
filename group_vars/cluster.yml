@@ -3,7 +3,7 @@
 appliances_repository_root: "{{ playbook_dir }}/../"
 
 # Read the secrets from the Ansible local facts on the control host
-vault_azimuth_user_password: "{{ hostvars[groups['control'][0]].ansible_local.openhpc_secrets.vault_azimuth_user_password }}"
+vault_hpc_user_password: "{{ hostvars[groups['control'][0]].ansible_local.openhpc_secrets.vault_hpc_user_password }}"
 vault_grafana_admin_password: "{{ hostvars[groups['control'][0]].ansible_local.openhpc_secrets.vault_grafana_admin_password }}"
 vault_elasticsearch_admin_password: "{{ hostvars[groups['control'][0]].ansible_local.openhpc_secrets.vault_elasticsearch_admin_password }}"
 vault_elasticsearch_kibana_password: "{{ hostvars[groups['control'][0]].ansible_local.openhpc_secrets.vault_elasticsearch_kibana_password }}"

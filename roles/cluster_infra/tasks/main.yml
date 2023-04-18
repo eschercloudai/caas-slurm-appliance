@@ -6,7 +6,8 @@
 
 # We need to convert the floating IP id to an address for Terraform
 # if we we have cluster_floating_ip, otherwise assume that we're
-# assigning the FIP in Terraform.
+# assigning the FIP in Terraform and that it will be available in
+# outputs.cluster_gateway_ip.
 - block:
     - name: Look up floating IP
       include_role:
@@ -18,7 +19,6 @@
     - name: Set floating IP address fact
       set_fact:
         cluster_floating_ip_address: "{{ os_floating_ip_info.floating_ip_address }}"
-
   when: cluster_floating_ip is defined
 
 - name: Install Terraform binary
@@ -59,7 +59,17 @@
 
 - name: Template Terraform files into project directory
   template:
-    src: "{{ cluster_terraform_template_dir ~ '/' if cluster_terraform_template_dir is defined else '' }}{{ item }}.j2"
+    src: >-
+      {{ 
+        "{}{}.j2".format(
+          (
+             cluster_terraform_template_dir ~ "/" 
+             if cluster_terraform_template_dir is defined 
+             else ""
+          ),
+          item
+        )
+      }}
     dest: "{{ terraform_project_path }}/{{ item }}"
   loop:
     - outputs.tf

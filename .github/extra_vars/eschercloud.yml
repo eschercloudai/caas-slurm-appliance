@@ -19,6 +19,16 @@ cluster_external_network: "Internet"
 login_flavor_name: "g.2.standard"
 control_flavor_name: "g.2.standard"
 metrics_db_maximum_size: 5
+terraform_backend_type: s3
+terraform_backend_config:
+  endpoint: https://nl1.eschercloud.com:6780
+  bucket: "terraform-state"
+  #encrypt: "true" # Requires additional configuration on RGW side https://docs.ceph.com/en/quincy/radosgw/encryption/
+  force_path_style: "true"
+  key: "{{ terraform_state_key }}"
+  region: "unused"
+  skip_credentials_validation: "true"
+  skip_region_validation: "true"
 
 # Image build
 image_build_manage_infra: true

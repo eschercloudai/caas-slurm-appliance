@@ -139,6 +139,9 @@ resource "openstack_compute_keypair_v2" "cluster_keypair" {
 ##### Cluster nodes
 #####
 
+{# build list of all ssh keys we need to inject  #}
+{% set auth_keys_list = ["\"${openstack_compute_keypair_v2.cluster_keypair.public_key}\""] + cluster_user_ssh_public_keys | default([cluster_user_ssh_public_key]) %}
+
 resource "openstack_compute_instance_v2" "login" {
   name      = "{{ cluster_name }}-login-0"
   image_id  = "{{ cluster_previous_image | default(cluster_image) }}"
@@ -160,8 +163,8 @@ resource "openstack_compute_instance_v2" "login" {
   user_data = <<-EOF
     #cloud-config
     ssh_authorized_keys:
-      - "${openstack_compute_keypair_v2.cluster_keypair.public_key}"
-      - {{ cluster_user_ssh_public_key }}
+      - {{ auth_keys_list | join("\n      - ")}}{# don't fix this with to_nice_yaml it will break as it will add extra single quotes around the double quoted TF vars #}
+    
   EOF
 }
 
@@ -209,8 +212,8 @@ resource "openstack_compute_instance_v2" "control" {
   user_data = <<-EOF
     #cloud-config
     ssh_authorized_keys:
-      - "${openstack_compute_keypair_v2.cluster_keypair.public_key}"
-      - {{ cluster_user_ssh_public_key }}
+      - {{ auth_keys_list | join("\n      - ")}}{# don't fix this with to_nice_yaml it will break as it will add extra single quotes around the double quoted TF vars #}
+    
     fs_setup:
       - label: state
         filesystem: ext4
@@ -243,8 +246,8 @@ resource "openstack_compute_instance_v2" "{{ partition.name }}" {
   user_data = <<-EOF
     #cloud-config
     ssh_authorized_keys:
-      - "${openstack_compute_keypair_v2.cluster_keypair.public_key}"
-      - {{ cluster_user_ssh_public_key }}
+      - {{ auth_keys_list | join("\n      - ")}}{# don't fix this with to_nice_yaml it will break as it will add extra single quotes around the double quoted TF vars #}
+    
   EOF
 }
 {% endfor %}

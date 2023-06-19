@@ -96,12 +96,22 @@ resource "openstack_blockstorage_volume_v3" "home" {
 data "openstack_networking_network_v2" "cluster_external_network" {
   name = "{{ cluster_external_network }}"
 }
-
+{% if cluster_internal_network is defined %}
+data "openstack_networking_network_v2" "cluster_network" {
+  name = "{{ cluster_internal_network }}"
+}
+{% else %}
 resource "openstack_networking_network_v2" "cluster_network" {
   name           = "{{ cluster_name }}-net"
   admin_state_up = "true"
 }
+{% endif %}
 
+{% if cluster_internal_subnet is defined %}
+data "openstack_networking_subnet_v2" "cluster_subnet" {
+  name = "{{ cluster_internal_subnet }}"
+}
+{% else %}
 resource "openstack_networking_subnet_v2" "cluster_subnet" {
   name       = "{{ cluster_name }}-subnet"
   network_id = "${openstack_networking_network_v2.cluster_network.id}"
@@ -126,6 +136,7 @@ resource "openstack_networking_router_interface_v2" "cluster_router_interface" {
   router_id = "${openstack_networking_router_v2.cluster_router.id}"
   subnet_id = "${openstack_networking_subnet_v2.cluster_subnet.id}"
 }
+{% endif %}
 
 #####
 ###### Cluster private key
@@ -152,13 +163,24 @@ resource "openstack_compute_instance_v2" "login" {
   {% endif %}
 
   network {
+{% if login_sriov_port_id is defined %}
+    port = "{{ login_sriov_port_id }}"
+{% else %}
+{% if cluster_internal_subnet is defined %}
+    uuid = "${data.openstack_networking_subnet_v2.cluster_subnet.network_id}"
+{% else %}
     uuid = "${openstack_networking_subnet_v2.cluster_subnet.network_id}"
+{% endif %}
+{% endif %}
   }
-
+  
+{% if login_sriov_port_id is not defined %}
   security_groups = [
     "${openstack_networking_secgroup_v2.secgroup_slurm_cluster.name}",
     "${openstack_networking_secgroup_v2.secgroup_slurm_login.name}"
   ]
+{% endif %}
+
   # Use cloud-init to inject the SSH keys
   user_data = <<-EOF
     #cloud-config
@@ -178,10 +200,19 @@ resource "openstack_compute_instance_v2" "control" {
   {% endif %}
 
   network {
+{% if nfs_sriov_port_id is defined %}
+    port = "{{ nfs_sriov_port_id }}"
+{% else %}
+{% if cluster_internal_subnet is defined %}
+    uuid = "${data.openstack_networking_subnet_v2.cluster_subnet.network_id}"
+{% else %}
     uuid = "${openstack_networking_subnet_v2.cluster_subnet.network_id}"
+{% endif %}
+{% endif %}
   }
-
+{% if nfs_sriov_port_id is not defined %}
   security_groups = ["${openstack_networking_secgroup_v2.secgroup_slurm_cluster.name}"]
+{% endif %}
 
   # root device:
   block_device {
@@ -238,7 +269,11 @@ resource "openstack_compute_instance_v2" "{{ partition.name }}" {
   flavor_name = "{{ partition.flavor_name }}"
 
   network {
+{% if cluster_internal_subnet is defined %}
+    uuid = "${data.openstack_networking_subnet_v2.cluster_subnet.network_id}"
+{% else %}
     uuid = "${openstack_networking_subnet_v2.cluster_subnet.network_id}"
+{% endif %}
   }
 
   security_groups = ["${openstack_networking_secgroup_v2.secgroup_slurm_cluster.name}"]

@@ -9,12 +9,12 @@ cluster_terraform_template_dir: "{{ appliances_environment_root }}/cluster_terra
 #terraform_backend_type: swift
 #terraform_backend_config:
 #  container: "{{ cluster_name }}-terraform-state"
-
+ 
 # Cluster instance vars
 cluster_name: "contextual-ai"
 cluster_id: "{{ cluster_name }}"
 openhpc_slurm_partitions:
-  - name: "s"
+  - name: "vm"
     count: 4
     flavor_name: "g.2.standard"
     default: "YES"
@@ -27,6 +27,11 @@ home_volume_size: 200
 
 # Cloud vars
 cluster_image: 239dbc14-331e-4b9e-aac9-8e362e22e4c5
+cluster_internal_network: "contextual-ai-vlan-net"
+cluster_internal_subnet: "contextual-ai-vlan-subnet"
+#nfs_sriov_port_id: "c44bda53-7dba-4f12-86b4-edb9b9b8560e"
+#login_sriov_port_id: "b0b5299a-4601-45b6-baee-8d913f475e94"
+
 cluster_external_network: "Internet"
 cluster_cidr: "192.168.112.0/24" # Can have many project networks with the same CIDR
 cluster_nameservers:
@@ -37,3 +42,4 @@ control_flavor_name: "g.4.standard"
 metrics_db_maximum_size: 50
 block_device_prefix: "sd"
 ansible_python_interpreter: /usr/bin/python3
+container_registry: docker.io/library/mysql

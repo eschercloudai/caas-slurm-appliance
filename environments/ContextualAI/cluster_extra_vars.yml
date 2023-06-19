@@ -11,34 +11,29 @@ cluster_terraform_template_dir: "{{ appliances_environment_root }}/cluster_terra
 #  container: "{{ cluster_name }}-terraform-state"
 
 # Cluster instance vars
-cluster_name: "slurm"
+cluster_name: "contextual-ai"
 cluster_id: "{{ cluster_name }}"
 openhpc_slurm_partitions:
-  - name: "m"
-    count: 1
-    flavor_name: "g.4.standard"
-    default: "YES"
   - name: "s"
-    count: 2
+    count: 4
     flavor_name: "g.2.standard"
-    default: "NO"
-cluster_run_validation: true
+    default: "YES"
+cluster_run_validation: false
 cluster_user_ssh_public_keys: 
-  - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJg3W6wKjLrKObikQz84K3oZJjUDpp2c6k62ZE4x1fev matta@stackhpc.com"
   - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBL0TOpOWI9bn2JMuwxmjuM/z3aDYu7fDQk68p+Wafe3 a.cleave@eshchercloud.ai"
   - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILsBdBzq1y4Vtr1FTJvF557t/Tvn+ZOSx5HouJ89B9rm david@macbookpro"
   - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKGHDwDB7Z7JQ/Sr9VZlnoAjzJOdNZQIE8vxRW//rK1h mouza"
-home_volume_size: 50
+home_volume_size: 200
 
 # Cloud vars
-cluster_image: 9809831d-503c-42a9-b4fc-77fa72aa2161
+cluster_image: 239dbc14-331e-4b9e-aac9-8e362e22e4c5
 cluster_external_network: "Internet"
-cluster_cidr: "192.168.99.0/24" # Can have many project networks with the same CIDR
+cluster_cidr: "192.168.112.0/24" # Can have many project networks with the same CIDR
 cluster_nameservers:
   - 1.1.1.1
   - 8.8.8.8
 login_flavor_name: "g.4.standard"
 control_flavor_name: "g.4.standard"
-metrics_db_maximum_size: 5
+metrics_db_maximum_size: 50
 block_device_prefix: "sd"
-
+ansible_python_interpreter: /usr/bin/python3

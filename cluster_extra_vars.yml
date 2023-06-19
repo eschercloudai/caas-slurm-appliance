@@ -16,7 +16,11 @@ openhpc_slurm_partitions:
     flavor_name: "g.2.standard"
     default: "NO"
 cluster_run_validation: true
-cluster_user_ssh_public_key: ""
+cluster_user_ssh_public_keys: 
+  - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJg3W6wKjLrKObikQz84K3oZJjUDpp2c6k62ZE4x1fev matta@stackhpc.com"
+  - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBL0TOpOWI9bn2JMuwxmjuM/z3aDYu7fDQk68p+Wafe3 a.cleave@eshchercloud.ai"
+  - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILsBdBzq1y4Vtr1FTJvF557t/Tvn+ZOSx5HouJ89B9rm david@macbookpro
+  - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKGET6AVf7neXJV8utA3YXMYItQz2Orj6AnvLKqQX6dA mouza
 home_volume_size: 50
 
 # Cloud vars

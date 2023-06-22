@@ -96,10 +96,7 @@
     - outputs.tf
     - providers.tf
     - resources.tf
-- debug: 
-    var: cluster_image
-- debug: 
-    var: cluster_previous_image
+    
 - name: Provision infrastructure
   include_role:
     name: stackhpc.terraform.infra

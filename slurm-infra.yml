@@ -5,7 +5,7 @@
   hosts: openstack
   roles:
     - cluster_infra
-
+   
 # Setup tasks now that all hosts have been added to the correct groups
 - hosts: cluster
   become: yes
@@ -118,7 +118,7 @@
       when: zenith_subdomain_ood is defined
 
 - import_playbook: vendor/stackhpc/ansible-slurm-appliance/ansible/adhoc/hpctests.yml
-
+  when: not skiptests | default(False)
 # Write the outputs as the final task
 - hosts: localhost
   tasks:

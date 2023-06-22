@@ -35,7 +35,24 @@ resource "openstack_networking_secgroup_rule_v2" "secgroup_slurm_cluster_rule_eg
 resource "openstack_networking_secgroup_rule_v2" "secgroup_slurm_cluster_rule_ingress_internal_v4" {
   direction         = "ingress"
   ethertype         = "IPv4"
-  remote_group_id   = "${openstack_networking_secgroup_v2.secgroup_slurm_cluster.id}"
+{% if cluster_internal_subnet is defined %}
+  remote_ip_prefix  = "${data.openstack_networking_subnet_v2.cluster_subnet.cidr}"
+{% else %}
+  security_group_id = "{{ cluster_cidr }}"
+{% endif %}
+  security_group_id = "${openstack_networking_secgroup_v2.secgroup_slurm_cluster.id}"
+}
+
+## Allow all ingress between nodes in the cluster
+resource "openstack_networking_secgroup_rule_v2" "secgroup_slurm_cluster_rule_ingress_internal_v4_icmp" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "icmp"
+{% if cluster_internal_subnet is defined %}
+  remote_ip_prefix  = "${data.openstack_networking_subnet_v2.cluster_subnet.cidr}"
+{% else %}
+  security_group_id = "{{ cluster_cidr }}"
+{% endif %}
   security_group_id = "${openstack_networking_secgroup_v2.secgroup_slurm_cluster.id}"
 }
 
@@ -77,6 +94,7 @@ resource "openstack_blockstorage_volume_v3" "state" {
     description = "State for control node"
     size = "{{ state_volume_size }}"
 }
+
 
 resource "openstack_blockstorage_volume_v3" "home" {
     name = "{{ cluster_name }}-home"
@@ -155,7 +173,19 @@ resource "openstack_compute_keypair_v2" "cluster_keypair" {
 
 resource "openstack_compute_instance_v2" "login" {
   name      = "{{ cluster_name }}-login-0"
-  image_id  = "{{ cluster_previous_image | default(cluster_image) }}"
+{% if login_root_vol_size is defined and login_root_vol_size > 0 %}
+  #image_id  = "{{ cluster_previous_image | default(cluster_image) }}"
+  block_device {
+      uuid = "{{ cluster_previous_image | default(cluster_image) }}"
+      source_type  = "image"
+      destination_type = "volume"
+      boot_index = 0
+      delete_on_termination = true
+	  volume_size = {{ login_root_vol_size }}
+  }
+{% else %}
+  image_id  = "{{ cluster_previous_image | default(cluster_image) }}" 
+{% endif %}
   {% if login_flavor_name is defined %}
   flavor_name = "{{ login_flavor_name }}"
   {% else %}
@@ -176,6 +206,7 @@ resource "openstack_compute_instance_v2" "login" {
   
 {% if login_sriov_port_id is not defined %}
   security_groups = [
+    "default",
     "${openstack_networking_secgroup_v2.secgroup_slurm_cluster.name}",
     "${openstack_networking_secgroup_v2.secgroup_slurm_login.name}"
   ]
@@ -192,7 +223,6 @@ resource "openstack_compute_instance_v2" "login" {
 
 resource "openstack_compute_instance_v2" "control" {
   name      = "{{ cluster_name }}-control-0"
-  image_id  = "{{ cluster_previous_image | default(cluster_image) }}"
   {% if control_flavor_name is defined %}
   flavor_name = "{{ control_flavor_name }}"
   {% else %}
@@ -211,17 +241,21 @@ resource "openstack_compute_instance_v2" "control" {
 {% endif %}
   }
 {% if nfs_sriov_port_id is not defined %}
-  security_groups = ["${openstack_networking_secgroup_v2.secgroup_slurm_cluster.name}"]
+  security_groups = ["default", "${openstack_networking_secgroup_v2.secgroup_slurm_cluster.name}"]
 {% endif %}
 
-  # root device:
+{% if control_root_vol_size is defined and control_root_vol_size > 0 %}
   block_device {
       uuid = "{{ cluster_previous_image | default(cluster_image) }}"
       source_type  = "image"
-      destination_type = "local"
+      destination_type = "volume"
       boot_index = 0
       delete_on_termination = true
+	  volume_size = {{ control_root_vol_size }}
   }
+{% else %}
+  image_id  = "{{ cluster_previous_image | default(cluster_image) }}" 
+{% endif %}
 
   # state volume:
   block_device {
@@ -275,8 +309,28 @@ resource "openstack_compute_instance_v2" "{{ partition.name }}" {
     uuid = "${openstack_networking_subnet_v2.cluster_subnet.network_id}"
 {% endif %}
   }
+  # root device:
+  block_device {
+      uuid = "{{ cluster_previous_image | default(cluster_image) }}"
+      source_type  = "image"
+      destination_type = "local"
+      boot_index = 0
+      delete_on_termination = true
+  }
 
-  security_groups = ["${openstack_networking_secgroup_v2.secgroup_slurm_cluster.name}"]
+{% if compute_extra_vols is defined and compute_extra_vols > 0 %}
+  # local scratch volumes
+{% for i in range(compute_extra_vols)  %}
+  block_device {
+      boot_index = -1
+	  delete_on_termination = true
+      destination_type = "volume"
+      source_type  = "blank"
+      volume_size = {{ compute_extra_vol_size | default(2) }}
+  }
+{% endfor %}
+{% endif %}
+  security_groups = ["default", "${openstack_networking_secgroup_v2.secgroup_slurm_cluster.name}"]
   # Use cloud-init to inject the SSH keys
   user_data = <<-EOF
     #cloud-config

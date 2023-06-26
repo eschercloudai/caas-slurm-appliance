@@ -217,8 +217,11 @@ resource "openstack_compute_instance_v2" "login" {
     #cloud-config
     ssh_authorized_keys:
       - {{ auth_keys_list | join("\n      - ")}}{# don't fix this with to_nice_yaml it will break as it will add extra single quotes around the double quoted TF vars #}
-    
+	  
   EOF
+  lifecycle {
+    ignore_changes = {{ cluster_tf_ignore_property_list | default(["user_data"]) | to_yaml }}
+  }
 }
 
 resource "openstack_compute_instance_v2" "control" {
@@ -292,6 +295,9 @@ resource "openstack_compute_instance_v2" "control" {
         - [LABEL=state, /var/lib/state, auto, "x-systemd.required-by=nfs-server.service,x-systemd.before=nfs-server.service"]
         - [LABEL=home, /exports/home, auto, "x-systemd.required-by=nfs-server.service,x-systemd.before=nfs-server.service"]
   EOF
+  lifecycle {
+    ignore_changes = {{ cluster_tf_ignore_property_list | default(["user_data"]) | to_yaml }}
+  }
 }
 
 {% for partition in openhpc_slurm_partitions %} 
@@ -320,7 +326,7 @@ resource "openstack_compute_instance_v2" "{{ partition.name }}" {
 
 {% if compute_extra_vols is defined and compute_extra_vols > 0 %}
   # local scratch volumes
-{% for i in range(compute_extra_vols)  %}
+{% for i in range(compute_extra_vols|default(0))  %}
   block_device {
       boot_index = -1
 	  delete_on_termination = true
@@ -338,6 +344,9 @@ resource "openstack_compute_instance_v2" "{{ partition.name }}" {
       - {{ auth_keys_list | join("\n      - ")}}{# don't fix this with to_nice_yaml it will break as it will add extra single quotes around the double quoted TF vars #}
     
   EOF
+  lifecycle {
+    ignore_changes = {{ cluster_tf_ignore_property_list | default(["user_data"]) | to_yaml }}
+  }
 }
 {% endfor %}
 #####

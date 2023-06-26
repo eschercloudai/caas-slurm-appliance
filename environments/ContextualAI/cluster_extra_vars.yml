@@ -15,13 +15,15 @@ ansible_user: cloud-user
 cluster_gateway_user: cloud-user
 cluster_name: "contextual-ai"
 cluster_id: "{{ cluster_name }}"
+openhpc_config_extra:
+  GresTypes: "gpu"
 openhpc_slurm_partitions:
   - name: "gpu"
     count: 15
     flavor_name: "g.baremetal"
     gres:
-      conf: gpu:A100:2
-      file: /dev/nvidia[0-1]
+      - conf: gpu:A100:2
+        file: /dev/nvidia[0-1]
 cluster_run_validation: true
 cluster_user_ssh_public_keys: 
   - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBL0TOpOWI9bn2JMuwxmjuM/z3aDYu7fDQk68p+Wafe3 a.cleave@eshchercloud.ai"

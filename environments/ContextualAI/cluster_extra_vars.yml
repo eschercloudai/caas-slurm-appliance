@@ -17,8 +17,11 @@ cluster_name: "contextual-ai"
 cluster_id: "{{ cluster_name }}"
 openhpc_slurm_partitions:
   - name: "gpu"
-    count: 2
+    count: 15
     flavor_name: "g.baremetal"
+    gres:
+      conf: gpu:A100:2
+      file: /dev/nvidia[0-1]
 cluster_run_validation: true
 cluster_user_ssh_public_keys: 
   - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBL0TOpOWI9bn2JMuwxmjuM/z3aDYu7fDQk68p+Wafe3 a.cleave@eshchercloud.ai"
@@ -26,16 +29,17 @@ cluster_user_ssh_public_keys:
   - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKGHDwDB7Z7JQ/Sr9VZlnoAjzJOdNZQIE8vxRW//rK1h mouza"
   -  ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOvn6dvyvvNyzBH9RdNujv3jR72Gc/feKi9OuMhhjE1u mkarpiarz@Escher-MBP
 
-compute_extra_vols: 0 
+# compute_extra_vols: 0 # if you want extra volumes in your compute vms (NOTE NOT BARE METAL) set this to 1 or more
+# compute_extra_vol_size: 2 #  how big do you want those volumes to be?
 # Cloud vars
 #cluster_image: 239dbc14-331e-4b9e-aac9-8e362e22e4c5 # hpc image
 #cluster_image: 4238d729-8e17-45ad-abc4-0bcec7f794bf # sriov image before changes
 # 283c58fc-d9b4-48aa-b0f4-bea8234d0223 # sriov image new
-cluster_image: bdc6c30b-1864-4ff8-8aef-da980b8a2f0e # manually tweake fat image with intel driver and sw raid grub cfg
-
-cluster_upgrade_system_packages: true
-cluster_internal_network: "contextual-ai-vlan-net"
-cluster_internal_subnet: "contextual-ai-vlan-subnet"
+cluster_image: bdc6c30b-1864-4ff8-8aef-da980b8a2f0e # manually tweaked fat image with intel driver and sw raid grub cfg and the ofed stack for RHEL8.7 forced into the image to allow the ohpc packeages to work properly.
+# without the dodgy hacks above the only supported ofed stack is 23.xxx (opposed to 5.8.xx) and this clashed really badly with the ohpc ompi.
+cluster_upgrade_system_packages: true # this is needed as it forces the terraform to use the target state rather then the previous state and then try and update them later. This might not be so great long term but wiith quick iteration befor the customer is on when it is safe to nuke and reboot the lot. . .this is really useful
+cluster_internal_network: "contextual-ai-vlan-net" # use this precreated vlan provider net so we can have ironic nodes
+cluster_internal_subnet: "contextual-ai-vlan-subnet" # the subnet for that netowrk to avoid extra TF hoops to jump through
 #nfs_sriov_port_id: "962a722b-71af-476f-a741-6f8e524dcfaa"
 #login_sriov_port_id: "57ed933d-36f2-4f75-a1f1-b45d9aa22e62"
 
@@ -53,4 +57,5 @@ metrics_db_maximum_size: 240 # I want the head node stats volume to be 250 and o
 
 
 block_device_prefix: "sd"
-#ansible_python_interpreter: /usr/bin/python3 # this fixes the "cannot connect to the login node after a reboot issue" please remove occasionally to see if this bug has been fixed in ansible
+#ansible_python_interpreter: /usr/bin/python3 # this fixes the "cannot connect to the login node after a reboot issue" - confrimed no longer needed ansible patched
+#cluster_tf_ignore_property_list: [user_data] # this is the default, overide to [] force rebuild on user_data changes or to add more properites to ignore (like image)

@@ -96,7 +96,8 @@
     - outputs.tf
     - providers.tf
     - resources.tf
-    
+  when: not do_not_change_terraform | default(False)
+  
 - name: Provision infrastructure
   include_role:
     name: stackhpc.terraform.infra

@@ -51,7 +51,7 @@ cluster_nameservers:
   - 1.1.1.1
   - 8.8.8.8
 login_flavor_name: "g.4.standard"
-control_flavor_name: "g.4.standard"
+control_flavor_name: "g.16.standard"
 control_root_vol_size: 100
 login_root_vol_size: 50
 home_volume_size: 50

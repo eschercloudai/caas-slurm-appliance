@@ -1,0 +1,116 @@
+---
+- name: Add hosts to beegfs
+  hosts: localhost
+  tasks:
+    - name: Add all hosts in beegfs_state_override
+      add_host:
+        name: "{{ item.key }}"
+        groups: "{{ hostvars[item.key].group_names | default([]) + [ 'beegfs'] }}"
+        ansible_host: "{{ item.value.ansible_host if item.value.ansible_host is defined else omit }}"
+        ansible_user: "{{ cluster_ssh_user }}"
+        ansible_ssh_private_key_file: "{{ cluster_ssh_private_key_file }}"
+        ansible_ssh_common_args: "{{ cluster_ssh_common_args }}"
+      loop: "{{ beegfs_state_override | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+      when:
+        - beegfs_state_override is defined
+
+    - block:
+      - name: add host to beegfs_mgmnt group when beegfs_mgmntd_enabled is true
+        add_host:
+          name: "{{ item.key }}"
+          groups: "{{ hostvars[item.key].group_names | default([]) + [ 'beegfs_mgmtd'] }}"
+        loop: "{{ beegfs_state_override | dict2items }}"
+        loop_control:
+          label: "{{ item.key }}"
+        when:
+          - item.value.beegfs_mgmntd_enabled is defined
+          - item.value.beegfs_mgmntd_enabled
+
+      - name: add host to beegfs_storage group when beegfs_storaged_enabled is true
+        add_host:
+          name: "{{ item.key }}"
+          groups: "{{ hostvars[item].group_names | default([]) + ['beegfs_storage'] }}"
+        loop: "{{ beegfs_state_override | dict2items }}"
+        loop_control:
+          label: "{{ item.key }}"
+        when:
+          - item.value.beegfs_storaged_enabled is defined
+          - item.value.beegfs_storaged_enabled
+
+      - name: add host to beegfs_meta group when beegfs_metad_enabled is true
+        add_host:
+          name: "{{ item.key }}"
+          groups: "{{ hostvars[item].group_names | default([]) + ['beegfs_meta'] }}"
+        loop: "{{ beegfs_state_override | dict2items }}"
+        loop_control:
+          label: "{{ item.key }}"
+        when:
+          - item.value.beegfs_metad_enabled is defined
+          - item.value.beegfs_metad_enabled
+
+      - name: add host to beegfs_client group when beegfs_clientd_enabled is true
+        add_host:
+          name: "{{ item.key }}"
+          groups: "{{ hostvars[item].group_names | default([]) + [ 'beegfs_client'] }}"
+        loop: "{{ beegfs_state_override | dict2items }}"
+        loop_control:
+          label: "{{ item.key }}"
+        when:
+          - item.value.beegfs_clientd_enabled is defined
+          - item.value.beegfs_clientd_enabled
+      when:
+        - beegfs_state_override is defined
+
+- name: setup beegfs vars from beegfs_state_override blob
+  hosts: beegfs
+  tasks:
+    - block:
+      - name: set beegfs_storage fact from beegfs_state_override var if it exists
+        set_fact:
+          beegfs_storage: "{{ beegfs_state_override[item.key]['beegfs_storage'] }}"
+        loop: "{{ beegfs_state_override | dict2items }}"
+        loop_control:
+          label: "{{ item.key }}"
+        when:
+          - beegfs_state_override[item.key]['beegfs_storage'] is defined
+          - item.key == ansible_hostname
+
+      - name: set beegfs_meta fact from beegfs_state_override var if it exists
+        set_fact:
+          beegfs_meta: "{{ beegfs_state_override[item.key]['beegfs_meta'] }}"
+        loop: "{{ beegfs_state_override | dict2items }}"
+        loop_control:
+          label: "{{ item.key }}"
+        when:
+          - beegfs_state_override[item.key]['beegfs_meta']is defined
+          - item.key == ansible_hostname
+
+      - name: set beegfs_mgmnt fact from beegfs_state_override var if it exists
+        set_fact:
+          beegfs_mgmnt: "{{ beegfs_state_override[item.key]['beegfs_mgmnt'] }}"
+        loop: "{{ beegfs_state_override | dict2items }}"
+        loop_control:
+          label: "{{ item.key }}"
+        delegate_to: "{{ item.key }}"
+        when:
+          - beegfs_state_override[item.key]['beegfs_mgmnt']is defined
+          - item.key == ansible_hostname
+
+      - name: set beegfs_client fact from beegfs_state_override var if it exists
+        set_fact:
+          beegfs_client: "{{ beegfs_state_override[item.key]['beegfs_client'] }}"
+        loop: "{{ beegfs_state_override | dict2items }}"
+        loop_control:
+          label: "{{ item.key }}"
+        delegate_to: "{{ item.key }}"
+        when:
+          - beegfs_state_override[item.key]['beegfs_client']is defined
+          - item.key == ansible_hostname
+          
+      when:
+        - beegfs_state_override is defined
+        - beegfs_state_override[ansible_hostname] is defined
+      tags: always
+

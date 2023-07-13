@@ -5,9 +5,19 @@
   hosts: openstack
   roles:
     - cluster_infra
+  tags:
+    - always
    
 # Setup tasks now that all hosts have been added to the correct groups
-- hosts: cluster
+
+#- hosts: all
+- import_playbook: parse_beegfs_state_override.yml
+  tags:
+    - always
+
+- hosts: 
+    - cluster
+    - beegfs
   become: yes
   tasks:
     # Ensure that the hosts in the cluster can all refer to each other by their hostname
@@ -19,6 +29,18 @@
       loop: "{{ ansible_play_hosts }}"
       loop_control:
         loop_var: host
+- hosts:
+  - beegfs
+  become: yes
+  roles:
+  - role: vendor/eschercloud/beegfs/beegfs-server
+    only_buddymir: false
+    tags: beegfs-server
+  - role: vendor/eschercloud/beegfs/beegfs-client
+    tags: beegfs-client
+  - role: vendor/eschercloud/beegfs/beegfs-server
+    only_buddymir: true
+    tags: beegfs-server
 
 # Ensure that the secrets are generated and persisted on the control host
 - name: Generate and persist secrets
@@ -27,6 +49,7 @@
   become: yes
   roles:
     - persist_openhpc_secrets
+  tags: always
 
 # validate.yml asserts presence of a control group which doesn't exist when 
 # destroying infra, so only validate when we're not destroying
@@ -57,6 +80,7 @@
 - import_playbook: vendor/stackhpc/ansible-slurm-appliance/ansible/slurm.yml
 - import_playbook: vendor/stackhpc/ansible-slurm-appliance/ansible/portal.yml
 - import_playbook: vendor/stackhpc/ansible-slurm-appliance/ansible/iam.yml
+  
 - import_playbook: vendor/stackhpc/ansible-slurm-appliance/ansible/monitoring.yml
 
 - name: Persist login hostkey across rebuilds

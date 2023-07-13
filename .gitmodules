@@ -1,3 +1,6 @@
 [submodule "vendor/stackhpc/ansible-slurm-appliance"]
 	path = vendor/stackhpc/ansible-slurm-appliance
 	url = git@github.com:eschercloudai/ansible-slurm-appliance.git
+[submodule "vendor/eschercloud/beegfs"]
+	path = vendor/eschercloud/beegfs
+	url = git@github.com:eschercloudai/beegfs-ansible.git

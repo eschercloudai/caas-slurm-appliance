@@ -7,7 +7,7 @@
     - cluster_infra
   tags:
     - always
-   
+
 # Setup tasks now that all hosts have been added to the correct groups
 
 #- hosts: all
@@ -15,7 +15,7 @@
   tags:
     - always
 
-- hosts: 
+- hosts:
     - cluster
     - beegfs
   become: yes
@@ -51,7 +51,7 @@
     - persist_openhpc_secrets
   tags: always
 
-# validate.yml asserts presence of a control group which doesn't exist when 
+# validate.yml asserts presence of a control group which doesn't exist when
 # destroying infra, so only validate when we're not destroying
 - import_playbook: vendor/stackhpc/ansible-slurm-appliance/ansible/validate.yml
   when: cluster_state is not defined or (cluster_state is defined and cluster_state != "absent")
@@ -80,9 +80,16 @@
 - import_playbook: vendor/stackhpc/ansible-slurm-appliance/ansible/slurm.yml
 - import_playbook: vendor/stackhpc/ansible-slurm-appliance/ansible/portal.yml
 - import_playbook: vendor/stackhpc/ansible-slurm-appliance/ansible/iam.yml
-  
 - import_playbook: vendor/stackhpc/ansible-slurm-appliance/ansible/monitoring.yml
 
+- name: generic_installers and modules
+  hosts: cluster
+  gather_facts: no
+  become: yes
+  roles:
+    - role: vendor/eschercloud/generic-installers
+  tags:
+    - generic-installers
 - name: Persist login hostkey across rebuilds
 # Need NFS for this so can't do it before the appliance plays
   hosts: login

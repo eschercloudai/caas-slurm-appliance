@@ -1,0 +1,91 @@
+---
+- name: download external files
+  ansible.builtin.get_url:
+    url: "{{ item }}"
+    dest: "{{ generic_installers_local_dir }}"
+  loop: "{{ generic_installers_remote_urls }}"
+  delegate_to: localhost
+  run_once: true
+
+- name: make sure staging folder exists
+  ansible.builtin.file:
+    path: "{{ generic_installers_cluster_staging_dir }}"
+    state: directory
+  run_once: true
+  when: ansible_hostname == generic_installers_staging_node
+  
+- name: Copy installers to staging folder
+  ansible.builtin.copy:
+    src: "{{ generic_installers_local_dir }}/{{ item.key }}"
+    dest: "{{ generic_installers_cluster_staging_dir }}"
+    force: "{{ generic_installers_force_stage }}"
+    mode: "{{ item.value.mode | default ( omit )}}"
+  loop: "{{ generic_installers_dict | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  when: ansible_hostname == generic_installers_staging_node
+- block:
+  - name: run executable installers
+    command: "{{ generic_installers_cluster_staging_dir }}/{{ item.key }} {{ item.value.args | default( omit ) }}"
+    args:
+      creates: "{{ item.value.creates | default( omit ) }}"
+    loop: "{{ generic_installers_dict | dict2items }}"
+    loop_control:
+      label: "{{ item.key }}"
+    when:
+      - item.value.type is defined
+      - item.value.type == "exec"
+
+  - name: make sure directory exists for tar extract
+    ansible.builtin.file:
+      path: "{{ item.value.dest }}"
+      state: directory
+      recurse: true
+    loop: "{{ generic_installers_dict | dict2items }}"
+    loop_control:
+      label: "{{ item.key }}"
+    when:
+      - item.value.type is defined
+      - item.value.type == "extract"
+      - item.value.dest is defined
+
+  - name: extract tar files
+    ansible.builtin.unarchive:
+      src: "{{ generic_installers_cluster_staging_dir }}/{{ item.key }}"
+      creates: "{{ item.value.creates | default( omit ) }}"
+      dest: "{{ item.value.dest }}"
+      remote_src: true
+      extra_opts: "{{ item.value.extra_opts | default( omit ) }}"
+    loop: "{{ generic_installers_dict | dict2items }}"
+    loop_control:
+      label: "{{ item.key }}"
+    when:
+      - item.value.type is defined
+      - item.value.type == "extract"
+      - item.value.dest is defined
+
+  - name: create directory for module files
+    ansible.builtin.file:
+      path: "{{ item.value.module_dir }}"
+      state: directory
+      recurse: true
+    loop: "{{ generic_installers_dict | dict2items }}"
+    loop_control:
+      label: "{{ item.key }}"
+    when:
+      - item.value.module_source is defined
+      - item.value.module_dir is defined
+
+  - name: copy module files
+    ansible.builtin.copy:
+      src: "{{ item.value.module_source }}"
+      dest: "{{ item.value.module_dir }}"
+      force: yes
+    loop: "{{ generic_installers_dict | dict2items }}"
+    loop_control:
+      label: "{{ item.key }}"
+    when:
+      - item.value.module_source is defined
+      - item.value.module_dir is defined
+  when:
+    - ansible_hostname in groups[generic_installers_group]

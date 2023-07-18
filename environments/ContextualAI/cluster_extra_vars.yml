@@ -58,8 +58,10 @@ home_volume_size: 50
 metrics_db_maximum_size: 240 # I want the head node stats volume to be 250 and openstack.yml:state_volume_size: "{{ metrics_db_maximum_size + 10 }}"
 
 # until we fix opensearch stop it filling all the ram on the controller
-opensearch_state: stopped
-opensearch_systemd_service_enabled: false
+#opensearch_state: stopped
+#opensearch_systemd_service_enabled: false
+opensearch_version: 2.8.0
+
 openhpc_packages_extra: 
   - "gnu12-compilers-ohpc"
   - "gnu9-compilers-ohpc"
@@ -71,6 +73,14 @@ openhpc_packages_extra:
   - "hdf5-gnu12-ohpc"
   - "phdf5-gnu12-openmpi4-ohpc"
   - "scalapack-gnu12-openmpi4-ohpc"
+  - "fftw-gnu12-openmpi4-ohpc"
+  - "fftw-gnu9-openmpi4-ohpc"
+
+
+
+generic_installers_cluster_staging_dir: "/mnt/beegfs/installers"
+generic_installers_group: contextual-ai_gpu
+
 block_device_prefix: "sd"
 #ansible_python_interpreter: /usr/bin/python3 # this fixes the "cannot connect to the login node after a reboot issue" - confrimed no longer needed ansible patched
 #cluster_tf_ignore_property_list: [user_data] # this is the default, overide to [] force rebuild on user_data changes or to add more properites to ignore (like image)

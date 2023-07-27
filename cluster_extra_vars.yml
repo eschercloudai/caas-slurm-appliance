@@ -2,6 +2,8 @@
 
 # Extra vars needed to build cluster
 cluster_terraform_template_dir: "{{ playbook_dir }}/cluster_terraform_template"
+login_sriov_port_id: 8c46f97b-62fa-46a9-a106-62a032b2e658
+nfs_sriov_port_id: 931c4042-c5c4-4f87-a264-c36ea93a703b
 
 # Cluster instance vars
 cluster_name: "slurm"

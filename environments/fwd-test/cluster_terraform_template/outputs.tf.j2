@@ -16,7 +16,12 @@ output "cluster_nodes" {
       {
         name          = openstack_compute_instance_v2.login.name
         ip            = openstack_compute_instance_v2.login.network[0].fixed_ip_v4
+{% if login_sriov_port_id is defined %}
+        groups        = ["{{ cluster_name }}_login", "firewalld"],
+		secgroup_list = [openstack_networking_secgroup_v2.secgroup_slurm_cluster.id, openstack_networking_secgroup_v2.secgroup_slurm_login.id]        
+{% else %}
         groups        = ["{{ cluster_name }}_login"],
+{% endif %}
         facts  = {
           openstack_project_id = data.openstack_identity_auth_scope_v3.scope.project_id
         }
@@ -24,7 +29,12 @@ output "cluster_nodes" {
       {
         name          = openstack_compute_instance_v2.control.name
         ip            = openstack_compute_instance_v2.control.network[0].fixed_ip_v4
-        groups        = ["{{ cluster_name }}_control"],
+{% if nfs_sriov_port_id is defined %}
+        groups        = ["{{ cluster_name }}__control", "firewalld"],
+		secgroup_list = [openstack_networking_secgroup_v2.secgroup_slurm_cluster.id]        
+{% else %}
+        groups        = ["{{ cluster_name }}__control"],
+{% endif %}
         facts  = {
           openstack_project_id = data.openstack_identity_auth_scope_v3.scope.project_id
         }
@@ -49,3 +59,9 @@ output "cluster_image" {
   description = "The id of the image used to build the cluster nodes"
   value       = "{{ cluster_previous_image | default(cluster_image) }}"
 }
+
+output "required_secgroups" {
+  description = "a list of secgroup we need to look up in ansible"
+  value       = [ openstack_networking_secgroup_v2.secgroup_slurm_cluster.id, openstack_networking_secgroup_v2.secgroup_slurm_login.id ]
+}
+

@@ -101,7 +101,29 @@
 - name: Provision infrastructure
   include_role:
     name: stackhpc.terraform.infra
-
+#- debug:
+#    var: hostvars[groups['openstack'][0]].terraform_provision
+#- debug:
+#    msg: "looking up secgroup info for secgroup id {{ item }}"
+#  loop: "{{ hostvars[groups['openstack'][0]].terraform_provision.outputs.required_secgroups.value }}"
+#  when: 
+#    - hostvars[groups['openstack'][0]].terraform_provision.outputs.required_secgroups is defined
+#    - hostvars[groups['openstack'][0]].terraform_provision.outputs.required_secgroups.value is defined
+#    - hostvars[groups['openstack'][0]].terraform_provision.outputs.required_secgroups.value is iterable
+- openstack.cloud.security_group_info:
+    name: "{{ item }}"
+  register: secgroup_lookup
+  loop: "{{ hostvars[groups['openstack'][0]].terraform_provision.outputs.required_secgroups.value }}"
+  when: 
+    - hostvars[groups['openstack'][0]].terraform_provision.outputs.required_secgroups is defined
+    - hostvars[groups['openstack'][0]].terraform_provision.outputs.required_secgroups.value is defined
+    - hostvars[groups['openstack'][0]].terraform_provision.outputs.required_secgroups.value is iterable
+- debug:
+    var: secgroup_lookup.results
+- copy:
+    content: "{{ secgroup_lookup.results | to_nice_yaml(indent=2) }}"
+    dest: "$HOME/secgroup_inf.yml"
+- fail:
 - name: Set cluster_floating_ip_address fact
   set_fact:
     cluster_floating_ip_address: "{{ hostvars[groups['openstack'][0]].terraform_provision.outputs.cluster_gateway_ip.value }}"

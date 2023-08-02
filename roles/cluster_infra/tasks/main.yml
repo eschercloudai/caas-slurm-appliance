@@ -81,11 +81,11 @@
 - name: Template Terraform files into project directory
   template:
     src: >-
-      {{ 
+      {{
         "{}{}.j2".format(
           (
-             cluster_terraform_template_dir ~ "/" 
-             if cluster_terraform_template_dir is defined 
+             cluster_terraform_template_dir ~ "/"
+             if cluster_terraform_template_dir is defined
              else ""
           ),
           item
@@ -97,33 +97,28 @@
     - providers.tf
     - resources.tf
   when: not do_not_change_terraform | default(False)
-  
+
 - name: Provision infrastructure
   include_role:
     name: stackhpc.terraform.infra
-#- debug:
-#    var: hostvars[groups['openstack'][0]].terraform_provision
-#- debug:
-#    msg: "looking up secgroup info for secgroup id {{ item }}"
-#  loop: "{{ hostvars[groups['openstack'][0]].terraform_provision.outputs.required_secgroups.value }}"
-#  when: 
-#    - hostvars[groups['openstack'][0]].terraform_provision.outputs.required_secgroups is defined
-#    - hostvars[groups['openstack'][0]].terraform_provision.outputs.required_secgroups.value is defined
-#    - hostvars[groups['openstack'][0]].terraform_provision.outputs.required_secgroups.value is iterable
+
+# for nodes with cx5 cards we need to define default firewalld rules as per what secgroups SHOULD be there bus aren't.
+# for that we need to get all the securtity group data
 - openstack.cloud.security_group_info:
     name: "{{ item }}"
   register: secgroup_lookup
   loop: "{{ hostvars[groups['openstack'][0]].terraform_provision.outputs.required_secgroups.value }}"
-  when: 
+  when:
     - hostvars[groups['openstack'][0]].terraform_provision.outputs.required_secgroups is defined
     - hostvars[groups['openstack'][0]].terraform_provision.outputs.required_secgroups.value is defined
     - hostvars[groups['openstack'][0]].terraform_provision.outputs.required_secgroups.value is iterable
-- debug:
-    var: secgroup_lookup.results
-- copy:
-    content: "{{ secgroup_lookup.results | to_nice_yaml(indent=2) }}"
-    dest: "$HOME/secgroup_inf.yml"
-- fail:
+
+- name: convert cluster node list fact to dictionary
+  set_fact:
+    cluster_nodes_dict: "{{ hostvars[groups['openstack'][0]].terraform_provision.outputs.cluster_nodes.value | key_generic_list_of_dicts('name') }}"
+  when:
+    - hostvars[groups['openstack'][0]].terraform_provision.outputs.cluster_nodes.value is defined
+
 - name: Set cluster_floating_ip_address fact
   set_fact:
     cluster_floating_ip_address: "{{ hostvars[groups['openstack'][0]].terraform_provision.outputs.cluster_gateway_ip.value }}"
@@ -163,3 +158,21 @@
     groups: "{{ hostvars[item].group_names | stackhpc.terraform.terraform_infra_expand_groups(cluster_groups_zenith) }}"
   loop: "{{ groups.get('cluster', []) }}"
   when: zenith_subdomain_monitoring is defined
+
+- name: on nodes with port security off update the firewalld_configs_default var using the secgroups that would have been appplied in TF if port security was on
+  set_fact:
+    firewalld_configs: "{{ secgroup_lookup.results | items_to_sgdict | sgdicts_to_fwd(hostvars[groups['openstack'][0]].cluster_nodes_dict[item].secgroup_list) + firewalld_configs_extra | selectattr('group', 'in',  group_names) | map(attribute='rule') }}"
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  loop: "{{ groups.get('firewalld', []) }}"
+  when:
+    - hostvars[groups['openstack'][0]].cluster_nodes_dict[item].secgroup_list is defined
+
+- name: Dump firewalld_configs_default when overriding due to port security being unavailiable
+  debug:
+    var: hostvars[item].firewalld_configs_default
+  when:
+    - hostvars[groups['openstack'][0]].cluster_nodes_dict[item].secgroup_list is defined
+  loop: "{{ groups.get('cluster', []) }}"
+
+

@@ -281,7 +281,7 @@ resource "openstack_compute_instance_v2" "control" {
     #cloud-config
     ssh_authorized_keys:
       - {{ auth_keys_list | join("\n      - ")}}{# don't fix this with to_nice_yaml it will break as it will add extra single quotes around the double quoted TF vars #}
-    
+
     fs_setup:
       - label: state
         filesystem: ext4

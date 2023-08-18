@@ -64,6 +64,6 @@ generic_installers_staging_node: login
 generic_installers_group: compute
 generic_installers_default: {}
 
-block_device_prefix: "sd"
+block_device_prefix: "vd"
 
 

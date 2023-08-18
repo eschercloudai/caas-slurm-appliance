@@ -217,10 +217,10 @@ resource "openstack_compute_instance_v2" "login" {
     #cloud-config
     ssh_authorized_keys:
       - {{ auth_keys_list | join("\n      - ")}}{# don't fix this with to_nice_yaml it will break as it will add extra single quotes around the double quoted TF vars #}
-	  
-  EOF
+
+EOF
   lifecycle {
-    ignore_changes = {{ cluster_tf_ignore_property_list | default(["user_data"]) | to_yaml }}
+    ignore_changes = {{ cluster_tf_ignore_property_list | default([]) | to_yaml }}
   }
 }
 
@@ -294,9 +294,9 @@ resource "openstack_compute_instance_v2" "control" {
     mounts:
         - [LABEL=state, /var/lib/state, auto, "x-systemd.required-by=nfs-server.service,x-systemd.before=nfs-server.service"]
         - [LABEL=home, /exports/home, auto, "x-systemd.required-by=nfs-server.service,x-systemd.before=nfs-server.service"]
-  EOF
+EOF
   lifecycle {
-    ignore_changes = {{ cluster_tf_ignore_property_list | default(["user_data"]) | to_yaml }}
+    ignore_changes = {{ cluster_tf_ignore_property_list | default([]) | to_yaml }}
   }
 }
 
@@ -342,10 +342,10 @@ resource "openstack_compute_instance_v2" "{{ partition.name }}" {
     #cloud-config
     ssh_authorized_keys:
       - {{ auth_keys_list | join("\n      - ")}}{# don't fix this with to_nice_yaml it will break as it will add extra single quotes around the double quoted TF vars #}
-    
-  EOF
+
+EOF
   lifecycle {
-    ignore_changes = {{ cluster_tf_ignore_property_list | default(["user_data"]) | to_yaml }}
+    ignore_changes = {{ cluster_tf_ignore_property_list | default([]) | to_yaml }}
   }
 }
 {% endfor %}

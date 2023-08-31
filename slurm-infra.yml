@@ -135,6 +135,34 @@
 
 - import_playbook: vendor/stackhpc/ansible-slurm-appliance/ansible/adhoc/hpctests.yml
   when: not skiptests | default(False)
+
+- hosts: cluster
+  tasks:
+    - ansible.builtin.package_facts:
+      tags: pkg-facts
+    #- debug:
+    #    var: ansible_facts.packages
+
+- hosts: localhost
+  tasks:
+    - name: check if pkg_dir_path exists
+      stat: 
+        path: "{{ pkg_dir_path | default( './package_info' ) }}"
+      register: pkg_dir_path_check
+    - name: move old  pkg_dir_path dir
+      command: "mv {{ pkg_dir_path | default( './package_info' ) }} {{ pkg_dir_path | default( './package_info' ) }}_{{ '%Y-%m-%dT%H:%M:%SZ' | strftime( pkg_dir_path_check.stat.ctime ) }}"
+      when: pkg_dir_path_check.stat.exists | bool
+    - name: create pkg_dir_path dir
+      ansible.builtin.file:
+        path: "{{ pkg_dir_path | default( './package_info' ) }}"
+        state: "directory"
+    - copy:
+        content: "{{ hostvars[ item ]['packages'] | to_nice_json }}"
+        dest: "{{ pkg_dir_path | default( './package_info' ) }}/{{ item }}_packages.json"
+      loop: "{{ groups['cluster'] }}"
+      when:
+        - cluster_state is not defined or cluster_state == 'present'
+  tags: pkg-facts  
 # Write the outputs as the final task
 - hosts: localhost
   tasks:
@@ -156,3 +184,5 @@
                 else {}
               )
           }}
+
+        

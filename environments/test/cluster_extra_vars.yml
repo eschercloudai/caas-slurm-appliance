@@ -9,7 +9,7 @@ cluster_terraform_template_dir: "{{ appliances_environment_root }}/cluster_terra
 # Cluster instance vars
 ansible_user: cloud-user
 cluster_gateway_user: cloud-user
-cluster_name: "fwd-test"
+cluster_name: "test"
 cluster_id: "{{ cluster_name }}"
 
 openhpc_slurm_partitions:
@@ -25,12 +25,12 @@ cluster_user_ssh_public_keys:
   -  ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOvn6dvyvvNyzBH9RdNujv3jR72Gc/feKi9OuMhhjE1u mkarpiarz@Escher-MBP
 
 cluster_image: 8c002743-afa9-42ba-8f09-46c2aa41a592
-cluster_upgrade_system_packages: true # this is needed as it forces the terraform to use the target state rather then the previous state and then try and update them later. This might not be so great long term but wiith quick iteration befor the customer is on when it is safe to nuke and reboot the lot. . .this is really useful
+#cluster_upgrade_system_packages: true # this is needed as it forces the terraform to use the target state rather then the previous state and then try and update them later. This might not be so great long term but wiith quick iteration befor the customer is on when it is safe to nuke and reboot the lot. . .this is really useful
 cluster_internal_network: "antony-routable" # use this precreated vlan provider net so we can have ironic nodes
 cluster_internal_subnet: "antony_routable_subnet" # the subnet for that netowrk to avoid extra TF hoops to jump through
 
-login_sriov_port_id: 8c46f97b-62fa-46a9-a106-62a032b2e658
-nfs_sriov_port_id: 931c4042-c5c4-4f87-a264-c36ea93a703b
+#login_sriov_port_id: 8c46f97b-62fa-46a9-a106-62a032b2e658
+#nfs_sriov_port_id: 931c4042-c5c4-4f87-a264-c36ea93a703b
 
 cluster_external_network: "Internet"
 
@@ -42,8 +42,8 @@ control_flavor_name: "g.4.standard"
 control_root_vol_size: 50
 login_root_vol_size: 50
 
-home_volume_size: 50
-metrics_db_maximum_size: 10 # I want the head node stats volume to be 250 and openstack.yml:state_volume_size: "{{ metrics_db_maximum_size + 10 }}"
+home_volume_size: 20
+metrics_db_maximum_size: 40
 
 # these should no longer be needed
 #openhpc_packages_extra:
@@ -61,7 +61,6 @@ metrics_db_maximum_size: 10 # I want the head node stats volume to be 250 and op
 #  - "python3-numpy-gnu9-ohpc" # hpctests scipy
 
 generic_installers_staging_node: login
-generic_installers_group: compute
 generic_installers_default: {}
 
 block_device_prefix: "vd"

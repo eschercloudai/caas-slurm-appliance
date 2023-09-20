@@ -41,8 +41,8 @@ login_flavor_name: "g.2.standard"
 control_flavor_name: "g.4.standard"
 control_root_vol_size: 50
 login_root_vol_size: 50
-
-home_volume_size: 20
+compute_root_vol_size: 100
+home_volume_size: 50
 metrics_db_maximum_size: 40
 
 # these should no longer be needed
@@ -60,8 +60,7 @@ metrics_db_maximum_size: 40
 #  - "python3-scipy-gnu9-openmpi4-ohpc" # hpctests scipy
 #  - "python3-numpy-gnu9-ohpc" # hpctests scipy
 
-generic_installers_staging_node: login
-generic_installers_default: {}
+
 
 block_device_prefix: "vd"
 

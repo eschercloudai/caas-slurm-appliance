@@ -1,21 +1,21 @@
 ---
 #generic_installers_remote_urls default to empty list if this is populated the it will doenload the urls to {{ generic_installers_local_dir }}
 generic_installers_remote_urls: []
-generic_installers_group: cluster
+generic_installers_group: batch
 generic_installers_local_dir: "{{ lookup('env', 'HOME') }}/installers" # this is where the installers are on the deploy
 generic_installers_cluster_staging_dir: "/home/installers" #this should be shared to all compute nodes
-generic_installers_staging_node: "{{ groups[generic_installers_group] | first }}" #this is the node we use to copy the files onto the shared filesystem this will probably need overriding in most cases
+generic_installers_staging_node: "{{ groups['login'] | first }}" #this is the node we use to copy the files onto the shared filesystem this will probably need overriding in most cases
 generic_installers_force_stage: false
 
 
 generic_installers_default:
-  nccl_2.18.3-1+cuda11.0_x86_64.txz:
-    type: "extract"
-    dest: "/usr/local"
-    creates: "/usr/local/nccl_2.18.3-cuda11.0"
-    extra_opts: 
-      - '--transform'
-      - 's/(.+)-1\+(.+)(_x86_64)/\1-\2/xg' # this replaces the + with a _ and removes the _x86_64 to (./nccl_2.18.3-1+cuda11.0_x86_64 -> ./nccl_2.18.3-cuda11.0)
+#  nccl_2.18.3-1+cuda11.0_x86_64.txz:
+#    type: "extract"
+#    dest: "/usr/local"
+#    creates: "/usr/local/nccl_2.18.3-cuda11.0"
+#    extra_opts: 
+#      - '--transform'
+#      - 's/(.+)-1\+(.+)(_x86_64)/\1-\2/xg' # this replaces the + with a _ and removes the _x86_64 to (./nccl_2.18.3-1+cuda11.0_x86_64 -> ./nccl_2.18.3-cuda11.0)
   nccl_2.18.3-1+cuda12.2_x86_64.txz:
     type: "extract"
     dest: "/usr/local"
@@ -23,13 +23,13 @@ generic_installers_default:
     extra_opts: 
       - '--transform'
       - 's/(.+)-1\+(.+)(_x86_64)/\1-\2/xg' # this replaces the + with a _ and removes the _x86_64 to (./nccl_2.18.3-1+cuda12.2_x86_64 -> ./nccl_2.18.3-cuda12.2)
-  cuda_11.8.0_520.61.05_linux.run:
-    type: "exec"
-    args: "--toolkit --silent"
-    module_source: "{{ generic_installers_local_dir }}/modulefiles/cuda11/11.8.lua"
-    mode: "0755"
-    module_dir: "/opt/ohpc/pub/modulefiles/cuda11/"
-    creates: "/usr/local/cuda-11.8/bin"
+#  cuda_11.8.0_520.61.05_linux.run:
+#    type: "exec"
+#    args: "--toolkit --silent"
+#    module_source: "{{ generic_installers_local_dir }}/modulefiles/cuda11/11.8.lua"
+#    mode: "0755"
+#    module_dir: "/opt/ohpc/pub/modulefiles/cuda11/"
+#    creates: "/usr/local/cuda-11.8/bin"
   cuda_12.2.0_535.54.03_linux.run:
     type: "exec"
     mode: "0755"

@@ -28,7 +28,7 @@ collections:
   type: git
   version: v0.2.0
 - name: openstack.cloud
-  version: 1.10.0
+  version: 2.1.0
 - name: https://github.com/eschercloudai/ansible-collection-terraform
   type: git
   version: feat/ecai-fixes

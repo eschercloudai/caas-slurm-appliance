@@ -2,8 +2,8 @@
 roles:
   - src: stackhpc.nfs
     version: v22.9.1
-  - src: git@github.com:eschercloudai/ansible-slurm-appliance-private.git
-    version: feat-create-pkg-list # requires/uses openhpc v2.6.1
+  - src: https://github.com/stackhpc/ansible-role-openhpc.git
+    version: v0.18.0 # requires/uses openhpc v2.6.1
     name: stackhpc.openhpc
   - src: https://github.com/stackhpc/ansible-node-exporter.git
     version: feature/no-install

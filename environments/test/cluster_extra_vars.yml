@@ -25,7 +25,7 @@ cluster_user_ssh_public_keys:
   -  ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOvn6dvyvvNyzBH9RdNujv3jR72Gc/feKi9OuMhhjE1u mkarpiarz@Escher-MBP
 
 cluster_image: 8c002743-afa9-42ba-8f09-46c2aa41a592
-#cluster_upgrade_system_packages: true # this is needed as it forces the terraform to use the target state rather then the previous state and then try and update them later. This might not be so great long term but wiith quick iteration befor the customer is on when it is safe to nuke and reboot the lot. . .this is really useful
+cluster_upgrade_system_packages: true # this is needed as it forces the terraform to use the target state rather then the previous state and then try and update them later. This might not be so great long term but wiith quick iteration befor the customer is on when it is safe to nuke and reboot the lot. . .this is really useful
 cluster_internal_network: "antony-routable" # use this precreated vlan provider net so we can have ironic nodes
 cluster_internal_subnet: "antony_routable_subnet" # the subnet for that netowrk to avoid extra TF hoops to jump through
 

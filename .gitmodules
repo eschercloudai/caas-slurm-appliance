@@ -1,5 +1,3 @@
-[submodule "git@github.com:eschercloudai/ansible-slurm-appliance-private.git"]
-	url = vendor/stackhpc/ansible-slurm-appliance
 [submodule "vendor/stackhpc/ansible-slurm-appliance"]
 	path = vendor/stackhpc/ansible-slurm-appliance
 	url = git@github.com:eschercloudai/ansible-slurm-appliance-private.git

@@ -12,10 +12,24 @@ cluster_gateway_user: cloud-user
 cluster_name: "test"
 cluster_id: "{{ cluster_name }}"
 
+#use thiese to import existing home and state vols
+#cluster_external_state_name: external-test-state
+#cluster_external_home_name: external-test-home
+
+
+#use this construction to specify grestypes toeanable gpus!
+openhpc_config_extra:
+  GresTypes: "gpu"
+
+
 openhpc_slurm_partitions:
   - name: "vm"
     count: 1
     flavor_name: "g.2.standard"
+# if you have gpus then this is how you add them to vms in a partition
+#    gres:
+#      - conf: gpu:A100:1
+#        file: /dev/nvidia0
 
 
 cluster_user_ssh_public_keys:

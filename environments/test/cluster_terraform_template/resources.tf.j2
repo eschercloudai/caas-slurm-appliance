@@ -89,13 +89,23 @@ resource "openstack_networking_secgroup_rule_v2" "secgroup_slurm_login_rule_ingr
 #####
 ##### Volumes
 #####
+{% if cluster_external_state_name %}
+data "openstack_blockstorage_volume_v3" "state" {
+   name = "{{ cluster_external_state_name }}"
+}
+{% else %}
 resource "openstack_blockstorage_volume_v3" "state" {
     name = "{{ cluster_name }}-state"
     description = "State for control node"
     size = "{{ state_volume_size }}"
 }
+{% endif %}
 
-
+{% if cluster_external_home_name %}
+data "openstack_blockstorage_volume_v3" "home" {
+   name = "{{ cluster_external_home_name }}"
+}
+{% else %}
 resource "openstack_blockstorage_volume_v3" "home" {
     name = "{{ cluster_name }}-home"
     description = "Home for control node"
@@ -107,7 +117,7 @@ resource "openstack_blockstorage_volume_v3" "home" {
     {% endif %}
     {% endif %}
 }
-
+{% endif %}
 #####
 ###### Cluster network
 ######
@@ -265,7 +275,11 @@ resource "openstack_compute_instance_v2" "control" {
       destination_type = "volume"
       source_type  = "volume"
       boot_index = -1
+{% if cluster_external_state_name %}
+      uuid = data.openstack_blockstorage_volume_v3.state.id
+{% else %}
       uuid = openstack_blockstorage_volume_v3.state.id
+{% endif %}
   }
 
   # home volume:
@@ -273,7 +287,11 @@ resource "openstack_compute_instance_v2" "control" {
       destination_type = "volume"
       source_type  = "volume"
       boot_index = -1
+{% if cluster_external_home_name %}
+      uuid = data.openstack_blockstorage_volume_v3.home.id
+{% else %}
       uuid = openstack_blockstorage_volume_v3.home.id
+{% endif %}
   }
 
   # Use cloud-init to a) inject SSH keys b) configure volumes

@@ -7,4 +7,4 @@
 inventory.*
 __pycache__
 terraform/backend.tf
-inventory
+/inventory

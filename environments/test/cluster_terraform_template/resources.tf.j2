@@ -89,24 +89,35 @@ resource "openstack_networking_secgroup_rule_v2" "secgroup_slurm_login_rule_ingr
 #####
 ##### Volumes
 #####
+{% if cluster_external_state_name is defined %}
+data "openstack_blockstorage_volume_v3" "state" {
+   name = "{{ cluster_external_state_name }}"
+}
+{% else %}
 resource "openstack_blockstorage_volume_v3" "state" {
     name = "{{ cluster_name }}-state"
     description = "State for control node"
     size = "{{ state_volume_size }}"
 }
+{% endif %}
 
-
+{% if cluster_external_home_name is defined %}
+data "openstack_blockstorage_volume_v3" "home" {
+   name = "{{ cluster_external_home_name }}"
+}
+{% else %}
 resource "openstack_blockstorage_volume_v3" "home" {
     name = "{{ cluster_name }}-home"
     description = "Home for control node"
     size = "{{ home_volume_size }}"
+	enable_online_resize = "{{ home_volume_resize | default("true") }}"
     {% if use_home_volume_type_fast is defined and use_home_volume_type_fast %}
     {% if home_volume_type_fast is defined %}
     volume_type = "{{ home_volume_type_fast }}"
     {% endif %}
     {% endif %}
 }
-
+{% endif %}
 #####
 ###### Cluster network
 ######
@@ -174,7 +185,6 @@ resource "openstack_compute_keypair_v2" "cluster_keypair" {
 resource "openstack_compute_instance_v2" "login" {
   name      = "{{ cluster_name }}-login-0"
 {% if login_root_vol_size is defined and login_root_vol_size > 0 %}
-  #image_id  = "{{ cluster_previous_image | default(cluster_image) }}"
   block_device {
       uuid = "{{ cluster_previous_image | default(cluster_image) }}"
       source_type  = "image"
@@ -265,7 +275,11 @@ resource "openstack_compute_instance_v2" "control" {
       destination_type = "volume"
       source_type  = "volume"
       boot_index = -1
+{% if cluster_external_state_name is defined %}
+      uuid = data.openstack_blockstorage_volume_v3.state.id
+{% else %}
       uuid = openstack_blockstorage_volume_v3.state.id
+{% endif %}
   }
 
   # home volume:
@@ -273,7 +287,11 @@ resource "openstack_compute_instance_v2" "control" {
       destination_type = "volume"
       source_type  = "volume"
       boot_index = -1
+{% if cluster_external_home_name is defined %}
+      uuid = data.openstack_blockstorage_volume_v3.home.id
+{% else %}
       uuid = openstack_blockstorage_volume_v3.home.id
+{% endif %}
   }
 
   # Use cloud-init to a) inject SSH keys b) configure volumes
@@ -305,7 +323,6 @@ resource "openstack_compute_instance_v2" "{{ partition.name }}" {
   count = {{ partition.count }}
 
   name      = "{{ cluster_name }}-compute-{{ partition.name }}-${count.index}"
-  image_id  = "{{ cluster_previous_image | default(cluster_image) }}"
   flavor_name = "{{ partition.flavor_name }}"
 
   network {
@@ -315,14 +332,18 @@ resource "openstack_compute_instance_v2" "{{ partition.name }}" {
     uuid = "${openstack_networking_subnet_v2.cluster_subnet.network_id}"
 {% endif %}
   }
-  # root device:
+{% if compute_root_vol_size is defined and compute_root_vol_size > 0 %}
   block_device {
       uuid = "{{ cluster_previous_image | default(cluster_image) }}"
       source_type  = "image"
-      destination_type = "local"
+      destination_type = "volume"
       boot_index = 0
       delete_on_termination = true
+	  volume_size = {{ compute_root_vol_size }}
   }
+{% else %}
+  image_id  = "{{ cluster_previous_image | default(cluster_image) }}" 
+{% endif %}
 
 {% if compute_extra_vols is defined and compute_extra_vols > 0 %}
   # local scratch volumes

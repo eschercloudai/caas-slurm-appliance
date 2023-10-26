@@ -65,6 +65,7 @@
 - import_playbook: vendor/stackhpc/ansible-slurm-appliance/ansible/slurm.yml
 - import_playbook: vendor/stackhpc/ansible-slurm-appliance/ansible/portal.yml
 - import_playbook: vendor/stackhpc/ansible-slurm-appliance/ansible/iam.yml
+- import_playbook: vendor/stackhpc/ansible-slurm-appliance/ansible/custom_modules.yml
 - import_playbook: vendor/stackhpc/ansible-slurm-appliance/ansible/monitoring.yml
 
 - name: generic_installers and modules

@@ -1,0 +1,4 @@
+---
+# TODO remove this and use an API call to d42
+vault_freeipa_admin_username: admin
+vault_freeipa_admin_password: "REDACTED"

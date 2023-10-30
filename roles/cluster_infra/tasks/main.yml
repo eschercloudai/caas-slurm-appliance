@@ -168,6 +168,25 @@
   when:
     - hostvars[groups['openstack'][0]].cluster_nodes_dict[item].secgroup_list is defined
 
+- name: add external_freeipa_var to freeipa_client hosts
+  set_fact:
+    external_freeipa_servers: "{{ hostvars[groups['openstack'][0]].external_freeipa_servers }}"
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  loop: "{{ groups.get('freeipa_client', []) }}"
+  when:
+    - hostvars[groups['openstack'][0]].external_freeipa_servers is defined
+
+- name: add vault_freeipa_admin_password to freeipa_client hosts
+  set_fact:
+    vault_freeipa_admin_password: "{{ hostvars[groups['openstack'][0]].vault_freeipa_admin_password }}"
+    vault_freeipa_admin_password: "{{ hostvars[groups['openstack'][0]].vault_freeipa_admin_username | default( 'admin' ) }}"
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  loop: "{{ groups.get('freeipa_client', []) }}"
+  when:
+    - hostvars[groups['openstack'][0]].vault_freeipa_admin_password is defined
+  
 - name: Dump firewalld_configs_default when overriding due to port security being unavailiable
   debug:
     var: hostvars[item].firewalld_configs_default

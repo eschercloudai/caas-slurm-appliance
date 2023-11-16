@@ -11,6 +11,7 @@ ansible_user: cloud-user
 cluster_gateway_user: cloud-user
 cluster_name: "test"
 cluster_id: "{{ cluster_name }}"
+cluster_admin_email: "acleave@escherloud.ai"
 
 #use thiese to import existing home and state vols
 #cluster_external_state_name: external-test-state
@@ -64,7 +65,7 @@ external_freeipa_servers:
   freeipa_realm: DSKJBFSDK.INTERNAL
   server_hostname_list:
     - test-ipa-1.dskjbfsdk.internal
-    - test-ipa-2.dskjbfsdk.internal
+    #- test-ipa-2.dskjbfsdk.internal
     - test-ipa-3.dskjbfsdk.internal
   server_ip_list:
     - 192.168.13.114

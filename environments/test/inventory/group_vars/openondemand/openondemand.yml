@@ -1,0 +1,14 @@
+ondemand_certbot_enable: true
+# the genernerated cert has link in /etc/pki/tls/{certs,private}/<openondemand_servername>.pem
+openondemand_ssl_cert: "/etc/pki/tls/certs/{{ openondemand_servername }}.pem"
+openondemand_ssl_cert_key: "/etc/pki/tls/private/{{ openondemand_servername }}.pem"
+openondemand_cluster_admin_email: "{{ cluster_admin_email }}"
+
+
+# BE AWARE of of the group_vars in the root this can and will override stuff unexpectedly
+openondemand_auth: "dex" # this can be anything except basic_pam 
+install_ondemand_dex: true
+openondemand_ldap_search_username: "ldapsearch_user"
+openondemand_ldap_search_password: "{{ vault_freeipa_ldapsearch_password }}"
+httpd_auth: []
+

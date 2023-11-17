@@ -4,3 +4,4 @@
 resolv_conf_nameservers: "{{ external_freeipa_servers.server_ip_list }}"
 # all freeipa nodes need to have a fqdn set for the host to be properly added to the correct ipa domain
 node_fqdn: "{{ inventory_hostname }}.{{external_freeipa_servers.freeipa_domain }}"
+freeipa_ntp_server_list: "{{ external_freeipa_servers['server_hostname_list'] }}"

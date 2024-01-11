@@ -1,0 +1,17 @@
+---
+# this allows the default hpc user to delete and edit modules without root
+#custom_modules_default_owner: hpc
+
+custom_modules_root_dirs:
+  - path: /home/shared/apps
+    owner: hpc-ipa
+    group: admins
+    recurse: true
+    mode: "775"
+
+custom_modules_dirs:
+  - state: directory
+    owner: hpc-ipa
+    group: admins
+    mode: "775"
+    path: /home/shared/modulefiles

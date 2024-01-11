@@ -1,0 +1,5 @@
+---
+# TODO remove this and use an API call to d42
+vault_freeipa_host_add_username: "ansible_host_service"
+vault_freeipa_host_add_password: "REDACTED"
+vault_freeipa_ldapsearch_password: "REDACTED"

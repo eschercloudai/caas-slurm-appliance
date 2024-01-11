@@ -9,7 +9,7 @@ cluster_terraform_template_dir: "{{ appliances_environment_root }}/cluster_terra
 # Cluster instance vars
 ansible_user: cloud-user
 cluster_gateway_user: cloud-user
-cluster_name: "test"
+cluster_name: "demo"
 cluster_id: "{{ cluster_name }}"
 cluster_admin_email: "acleave@escherloud.ai"
 
@@ -60,18 +60,14 @@ login_root_vol_size: 50
 compute_root_vol_size: 100
 home_volume_size: 50
 metrics_db_maximum_size: 40
-
+openondemand_ldap_search_bind_suffix: ",dc=demo,dc=internal"
 external_freeipa_servers:
-  freeipa_domain: dskjbfsdk.internal
-  freeipa_realm: DSKJBFSDK.INTERNAL
+  freeipa_domain: demo.internal
+  freeipa_realm: DEMO.INTERNAL
   server_hostname_list:
-    - test-ipa-1.dskjbfsdk.internal
-    #- test-ipa-2.dskjbfsdk.internal
-    - test-ipa-3.dskjbfsdk.internal
+    - test-ipa-1.demo.internal
   server_ip_list:
-    - 192.168.13.114
-    - 192.168.13.150
-    - 192.168.13.111
+    - 192.168.13.234
 
 # these should no longer be needed
 #openhpc_packages_extra:

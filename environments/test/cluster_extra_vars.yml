@@ -9,9 +9,8 @@ cluster_terraform_template_dir: "{{ appliances_environment_root }}/cluster_terra
 # Cluster instance vars
 ansible_user: cloud-user
 cluster_gateway_user: cloud-user
-cluster_name: "demo"
+cluster_name: "test"
 cluster_id: "{{ cluster_name }}"
-cluster_admin_email: "acleave@escherloud.ai"
 
 #use thiese to import existing home and state vols
 #cluster_external_state_name: external-test-state
@@ -27,6 +26,10 @@ openhpc_slurm_partitions:
   - name: "vm"
     count: 1
     flavor_name: "g.2.standard"
+  - name: "tiny"
+    count: 1
+    flavor_name: "g.2.standard"
+    compute_root_vol_size: 60
 # if you have gpus then this is how you add them to vms in a partition
 #    gres:
 #      - conf: gpu:A100:1
@@ -39,8 +42,7 @@ cluster_user_ssh_public_keys:
   - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKGHDwDB7Z7JQ/Sr9VZlnoAjzJOdNZQIE8vxRW//rK1h mouza"
   -  ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOvn6dvyvvNyzBH9RdNujv3jR72Gc/feKi9OuMhhjE1u mkarpiarz@Escher-MBP
 
-cluster_image: 36c64716-5a06-4d3c-8586-5e48016764f0 #openhpc-231107-1427-38e5ac77
-#cluster_image: 8c002743-afa9-42ba-8f09-46c2aa41a592
+cluster_image: 8c002743-afa9-42ba-8f09-46c2aa41a592
 cluster_upgrade_system_packages: true # this is needed as it forces the terraform to use the target state rather then the previous state and then try and update them later. This might not be so great long term but wiith quick iteration befor the customer is on when it is safe to nuke and reboot the lot. . .this is really useful
 cluster_internal_network: "antony-routable" # use this precreated vlan provider net so we can have ironic nodes
 cluster_internal_subnet: "antony_routable_subnet" # the subnet for that netowrk to avoid extra TF hoops to jump through
@@ -60,7 +62,7 @@ login_root_vol_size: 50
 compute_root_vol_size: 100
 home_volume_size: 50
 metrics_db_maximum_size: 40
-openondemand_ldap_search_bind_suffix: ",dc=demo,dc=internal"
+
 external_freeipa_servers:
   freeipa_domain: demo.internal
   freeipa_realm: DEMO.INTERNAL
@@ -69,6 +71,7 @@ external_freeipa_servers:
   server_ip_list:
     - 192.168.13.234
 
+cluster_admin_email: a.cleave@eschercloud.ai
 # these should no longer be needed
 #openhpc_packages_extra:
 #  - "gnu9-compilers-ohpc" # hpctests siesta

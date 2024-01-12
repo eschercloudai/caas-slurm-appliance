@@ -332,14 +332,14 @@ resource "openstack_compute_instance_v2" "{{ partition.name }}" {
     uuid = "${openstack_networking_subnet_v2.cluster_subnet.network_id}"
 {% endif %}
   }
-{% if compute_root_vol_size is defined and compute_root_vol_size > 0 %}
+{% if partition.compute_root_vol_size | default(compute_root_vol_size) is defined and partition.compute_root_vol_size | default(compute_root_vol_size) > 0 %}
   block_device {
       uuid = "{{ cluster_previous_image | default(cluster_image) }}"
       source_type  = "image"
       destination_type = "volume"
       boot_index = 0
       delete_on_termination = true
-	  volume_size = {{ compute_root_vol_size }}
+	  volume_size = {{ partition.compute_root_vol_size | default(compute_root_vol_size) }}
   }
 {% else %}
   image_id  = "{{ cluster_previous_image | default(cluster_image) }}" 

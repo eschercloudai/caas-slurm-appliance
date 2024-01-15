@@ -1,0 +1,10 @@
+---
+- hosts: builder
+  tasks:
+    # Something in EC baseimage breaks /bin/newuidmap
+    # https://github.com/containers/podman/issues/2788#issuecomment-480244647
+    # Use command module because there's no reinstall state in yum module
+    - name: Force reinstall of shadow-utils
+      command:
+        cmd: dnf reinstall -y shadow-utils
+      become: true
